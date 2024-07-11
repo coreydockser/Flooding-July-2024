@@ -113,10 +113,10 @@
         async function createMap() {
 
 
-            const purple = "#af2dcb"
-            const light_purple = "#dcacf3"
+           
             const rain_data = await d3.csv("data/stormdata.csv")
             const incidents_data = await d3.csv("data/closures.csv")
+            const rescues_data = await d3.csv("data/waterrescues.csv")
 
             const rain_icon = L.divIcon({
                 html: '<i class="fa-solid fa-cloud-showers-heavy fa-2xl"></i>',
@@ -136,6 +136,11 @@
                 className: 'alert_icon'
             })
 
+            const rescue_icon = L.divIcon({
+                html: '<i class="fa-solid fa-handshake-angle fa-2xl" style="color: #258a00;"></i>',
+                iconSize: [20, 20],
+                className: 'rescue_icon'
+            })
 
             console.log(rain_data)
             console.log(incidents_data)
@@ -188,9 +193,22 @@
                     .addTo(road_closures)
             }
 
+            var rescues = L.layerGroup();
+            rescues.addTo(map)
+
+            for (let index = 0; index < rescues_data.length; ++index) {
+                var marker = L.marker([rescues_data[index]["Lat"], rescues_data[index]["Lon"]],
+                    {
+                        icon: rescue_icon
+                    }
+                ).bindTooltip(`<b>${rescues_data[index]["Town"]}</b> reported at least one water rescue.`, { "className": "tooltip", "opacity": 1 })
+                    .addTo(road_closures)
+            }
+
             var layerchoices = {
-                "Rainfall totals": rain_layer,
-                "Closures and Alerts": road_closures
+                'Towns with water rescues <i class="fa-solid fa-handshake-angle fa-2xl" style="color: #258a00;"></i>' : rescues,
+                'Rainfall totals <i class="fa-solid fa-cloud-showers-heavy fa-xl"></i>': rain_layer,
+                'Closures <i class="fa-solid fa-circle-xmark fa-xl" style="color: #bd0000;"></i> and Alerts <i class="fa-solid fa-triangle-exclamation fa-xl" style="color: #f0c733;"></i>': road_closures
             }
 
             var layerControl = L.control.layers({}, layerchoices).addTo(map)
