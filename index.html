@@ -218,7 +218,7 @@
                 'Closures <i class="fa-solid fa-circle-xmark fa-xl" style="color: #bd0000;"></i> and Alerts <i class="fa-solid fa-triangle-exclamation fa-xl" style="color: #f0c733;"></i>': road_closures
             }
 
-            var layerControl = L.control.layers({}, layerchoices).addTo(map)
+            var layerControl = L.control.layers({}, layerchoices, {collapsed:false}).addTo(map)
 
 
 
