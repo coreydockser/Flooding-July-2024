@@ -114,7 +114,6 @@
 
 
            
-            const rain_data = await d3.csv("data/stormdata.csv")
             const incidents_data = await d3.csv("data/closures.csv")
             const rescues_data = await d3.csv("data/waterrescues.csv")
             const time = await d3.csv("data/time.txt")
@@ -122,14 +121,9 @@
             
             var datestamp = new Date(timestamp * 1000)
 
-            const time_string = `Road closure data is as of July 11 at ${datestamp.toTimeString().slice(0,5)} p.m.`
+            const time_string = `Road closure data is as of July 11 at ${datestamp.getHours() % 12}:${datestamp.toTimeString().slice(3,5)} p.m.`
             console.log(time_string)
 
-            const rain_icon = L.divIcon({
-                html: '<i class="fa-solid fa-cloud-showers-heavy fa-2xl"></i>',
-                iconSize: [20, 20],
-                className: 'rain_icon'
-            })
 
             const closed_icon = L.divIcon({
                 html: '<i class="fa-solid fa-circle-xmark fa-2xl" style="color: #bd0000;"></i>',
@@ -149,7 +143,7 @@
                 className: 'rescue_icon'
             })
 
-            console.log(rain_data)
+       
             console.log(incidents_data)
 
 
@@ -176,16 +170,6 @@
 
 
 
-            var rain_layer = L.layerGroup();
-            rain_layer.addTo(map)
-            for (let index = 0; index < rain_data.length; ++index) {
-                var marker = L.marker([rain_data[index]["Lat"], rain_data[index]["Lon"]],
-                    {
-                        icon: rain_icon
-                    }
-                ).bindTooltip(`<b>${rain_data[index]["Town"]}</b> recorded <b>${rain_data[index]["Rainfall"]}"</b> of rain.`, { "className": "tooltip", "opacity": 1 })
-                    .addTo(rain_layer)
-            }
 
             var road_closures = L.layerGroup();
             road_closures.addTo(map)
@@ -214,7 +198,6 @@
 
             var layerchoices = {
                 'Towns with water rescues <i class="fa-solid fa-handshake-angle fa-2xl" style="color: #258a00;"></i>' : rescues,
-                'Rainfall totals <i class="fa-solid fa-cloud-showers-heavy fa-xl"></i>': rain_layer,
                 'Closures <i class="fa-solid fa-circle-xmark fa-xl" style="color: #bd0000;"></i> and Alerts <i class="fa-solid fa-triangle-exclamation fa-xl" style="color: #f0c733;"></i>': road_closures
             }
 
