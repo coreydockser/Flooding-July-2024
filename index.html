@@ -1,0 +1,244 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    
+    <!-- Metadata -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Eclipse Map</title>
+
+    <!-- External -->
+    <script type="text/javascript" src="https://pym.nprapps.org/pym.v1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"
+    integrity="sha512-BwHfrr4c9kmRkLw6iXFdzcdWV/PGkVgiIyIWLLlTSXzWQzxuSg4DiQUCpauz/EWjgk5TYQqX/kvn9pG1NpYfqg=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"
+    integrity="sha512-M7nHCiNUOwFt6Us3r8alutZLm9qMt4s9951uo8jqO4UwJ1hziseL6O3ndFyigx6+LREfZqnhHxYjKRJ8ZQ69DQ=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+   
+    <script src="https://kit.fontawesome.com/c133de535f.js" crossorigin="anonymous"></script>
+
+    <!-- Fonts -->
+    <link href='https://fonts.googleapis.com/css?family=Poppins' rel='stylesheet' type='text/css'>
+
+    <style>
+        /* Styled to match Grove  */
+
+        body {
+            font-family: "Poppins", "Helvetica Neue", "Helvetica", Helvetica, Arial, sans-serif;
+            letter-spacing: 0.08px;
+            word-spacing: 0.4px;
+            line-height: 1.5;
+            max-width:700px;
+        }
+    </style>
+
+   
+
+
+
+    <style>
+
+    
+.tooltip {
+
+    width: 200px;
+    white-space: normal;
+   
+}
+
+
+
+        #logo_img {
+            height:50px;
+            filter: drop-shadow(1px 1px 2px black)
+            
+        }
+
+        .markerIcon {
+            text-align: center;
+            line-height: 20px;
+        }
+        
+        
+
+        #leaflet {
+            margin: auto;
+            font-family: Poppins;
+            z-index: 0;
+        }
+
+       
+
+
+
+
+
+        .leaflet-control-attribution {
+            
+            max-width: 50%;
+        }
+
+        .leaflet-marker-icon {
+    text-align: center;
+}
+
+.rain_icon{
+    filter:drop-shadow(1px 1px 2px);
+}
+
+.closed_icon {
+    filter:drop-shadow(1px 1px 0px white)
+}
+
+
+
+        .svg-inline --fa {
+            
+    display: inline-block;
+    font-size: inherit;
+    width: auto!important; 
+    height: 100%!important;
+    overflow: visible;
+    max-width: 100%; 
+}
+
+       
+    </style>
+
+
+
+</head>
+
+<body>
+  
+
+    <script>
+
+        async function createMap() {
+
+
+            const purple = "#af2dcb"
+            const light_purple = "#dcacf3"
+            const rain_data = await d3.csv("data/stormdata.csv")
+            const incidents_data = await d3.csv("data/closures.csv")
+         
+            const rain_icon = L.divIcon({
+                html:'<i class="fa-solid fa-cloud-showers-heavy fa-2xl"></i>',
+                iconSize:[20,20],
+                className: 'rain_icon'
+            })
+
+            const closed_icon = L.divIcon({
+                html:'<i class="fa-solid fa-circle-xmark fa-2xl" style="color: #bd0000;"></i>',
+                iconSize:[20,20],
+                className: 'closed_icon'
+            })
+
+            const alert_icon = L.divIcon({
+                html: '<i class="fa-solid fa-triangle-exclamation fa-2xl" style="color: #f0c733;"></i>',
+                iconSize:[20,20],
+                className: 'alert_icon'
+            })
+           
+       
+            console.log(rain_data)
+            console.log(incidents_data)
+        
+
+            
+
+
+
+
+
+
+
+            const map = L.map("leaflet", {
+                maxBounds: [[45.6827279959561, -74.60342861162103], [[42.13963625461821, -70.15557545763363]]],
+                minZoom: 8,
+                maxBoundsViscosity: 1
+            }).setView(
+                [44.27874914580646, -73.13696501739662
+                ],
+                8
+            );
+            L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png', {
+                attribution: `Data Source: <a href="https://newengland511.org/">New England 511</a>, <a href="https://www.weather.gov/btv/">NWS<a> | &copy; <a href="https://stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> | <i>Corey Dockser / Vermont Public </i>`,
+            }).addTo(map);
+
+          
+
+
+            var rain_layer = L.layerGroup();
+            rain_layer.addTo(map)
+            for (let index = 0; index < rain_data.length; ++index) {
+                var marker = L.marker([rain_data[index]["Lat"], rain_data[index]["Lon"]],
+                {
+                    icon: rain_icon
+                }
+                ).bindTooltip(`<b>${rain_data[index]["Town"]}</b> recorded <b>${rain_data[index]["Rainfall"]}"</b> of rain.`, {"className" : "tooltip", "opacity" : 1})
+                .addTo(rain_layer)
+            }
+
+            var road_closures = L.layerGroup();
+            road_closures.addTo(map)
+            for (let index = 0; index < incidents_data.length; ++index) {
+                var marker = L.marker([incidents_data[index]["lat"], incidents_data[index]["lon"]],
+                {
+                    icon: incidents_data[index]["layerName"] == "Incidents" ? alert_icon : closed_icon
+                }
+                ).bindTooltip(`<h3 style="margin-top:0; margin-bottom:0">${incidents_data[index]["roadwayName"]}</h3>${incidents_data[index]["description"]}
+                <br><b>Start time: </b>${incidents_data[index]["startTime"]}
+                <br><b>Last updated: </b>${incidents_data[index]["lastUpdated"]}`, {"className" : "tooltip", "opacity" : 1})
+                .addTo(road_closures)
+            }
+
+            var layerchoices = {
+                "Rainfall totals" : rain_layer,
+                "Closures and Alerts" : road_closures
+            }
+
+            var layerControl = L.control.layers({}, layerchoices).addTo(map)
+            
+
+            
+            var logo_holder = L.control({position: "bottomleft"})
+
+            logo_holder.onAdd = function(map) {
+                var logo = L.DomUtil.create("div", "logo")
+                logo.innerHTML = `<a href=https://vermontpublic.org><img src="img/vt_logo_light.png" id="logo_img" height="100px"></a>`
+                return logo
+            }
+
+            logo_holder.addTo(map)
+
+
+
+
+
+        }
+        createMap()
+    </script>
+    <div id="leaflet" style="min-height: 500px; max-height: 800px; width: 100%"></div>
+    <div style="font-size: 14px; color:rgb(118, 118, 118)">
+        Click on the layer icon in the top right to switch between layers.</div>
+
+
+
+
+
+
+
+    <script>
+        window.onload = function () {
+            pymChild = new pym.Child({});
+            pym.Child({ polling: 500 });
+        };
+    </script>
+
+
+</body>
+
+</html>
